@@ -100,6 +100,10 @@ def parse_arguments(args):
         '-px','--proxy', type=str, default=None,
         help='Proxy to be used when accepting the Terms of Services. Must be host:port (ex. 1.1.1.1:80). Must be a HTTPS proxy.'
     )
+    parser.add_argument(
+        '-tos','--TOS', type=bool, default=False,
+        help='Set -tos flag to complete TOS and do tutorial'
+    )
 
     return parser.parse_args(args)
 
@@ -176,10 +180,11 @@ def entry():
                             email_verify(args.googlemail, args.googlepass)
                         else:
                             email_verify(args.plusmail, args.googlepass)
-
-                    # Accept Terms Service
-                    accept_tos(account_info["username"], account_info["password"], args.location, args.proxy, args.hash_key)
-
+                    if args.TOS is not None:
+                        # Accept Terms Service
+                        accept_tos(account_info["username"], account_info["password"], args.location, args.proxy, args.hash_key)
+                    else:
+                        print('TOS is false, skipping...')
                     # Append usernames
                     with open(args.textfile, "a") as ulist:
                         if args.outputformat == "pkgo":

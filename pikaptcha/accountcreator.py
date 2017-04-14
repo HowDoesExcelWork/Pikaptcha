@@ -194,7 +194,7 @@ def create_account(username, password, email, birthday, captchakey2, captchatime
         gkey = html_source[gkey_index:gkey_index+40]
         recaptcharesponse = "Failed"
         while(recaptcharesponse == "Failed"):
-            recaptcharesponse = openurl("http://2captcha.com/in.php?key=" + captchakey2 + "&method=userrecaptcha&googlekey=" + gkey + "&pageurl=" + driver.current_url)
+            recaptcharesponse = trycaptchaurl("http://2captcha.com/in.php?key=" + captchakey2 + "&method=userrecaptcha&googlekey=" + gkey + "&pageurl=" + driver.current_url, proxy)
         captchaid = recaptcharesponse[3:]
         recaptcharesponse = "CAPCHA_NOT_READY"
         elem = driver.find_element_by_class_name("g-recaptcha")
@@ -211,7 +211,7 @@ def create_account(username, password, email, birthday, captchakey2, captchatime
             print "Captcha still not solved, waiting another 10 seconds."
             recaptcharesponse = "Failed"
             while(recaptcharesponse == "Failed"):
-                recaptcharesponse = openurl("http://2captcha.com/res.php?key=" + captchakey2 + "&action=get&id=" + captchaid)
+                recaptcharesponse = trycaptchaurl("http://2captcha.com/res.php?key=" + captchakey2 + "&action=get&id=" + captchaid, proxy)
         if timedout == False:
             solvedcaptcha = recaptcharesponse[3:]
             captchalen = len(solvedcaptcha)
@@ -284,3 +284,21 @@ def random_account(username=None, password=None, email=None, birthday=None, plus
         "password": password,
         "email": try_email
     }
+
+
+def trycaptchaurl(address, proxy):
+    proxytry = urllib2.ProxyHandler({'https': proxy})
+    opener = urllib2.build_opener(proxytry)
+    urllib2.install_opener(opener)
+    try:
+        urlresponse = urllib2.urlopen(address).read()
+        return urlresponse
+    except urllib2.HTTPError, e:
+        print("HTTPError = " + str(e.code))
+    except urllib2.URLError, e:
+        print("URLError = " + str(e.code))
+    except Exception:
+        import traceback
+        print("Generic Exception: " + traceback.format_exc())
+    print("Request to " + address + "failed.")
+    return "Failed"
